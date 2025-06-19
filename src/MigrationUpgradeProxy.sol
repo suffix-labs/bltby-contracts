@@ -41,11 +41,3 @@ contract MigrationAndUpgradeProxy is Ownable {
         return proxies[contractName];
     }
 }
-
-/*
- Key Features:
- - Uses OpenZeppelin TransparentUpgradeableProxy for upgradeability.
- - The contract owner can deploy new proxies and manage upgrades.
- - Admin roles are initially set manually and can transition to a DAO-controlled setup.
- - Admin roles can be updated to ensure control transition from central to decentralized governance.
-*/

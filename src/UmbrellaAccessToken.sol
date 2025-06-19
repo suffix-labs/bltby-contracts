@@ -128,13 +128,3 @@ contract UmbrellaAccessTokenContract is AccessControl, ReentrancyGuard {
         return false;
     }
 }
-
-/*
- Key Features:
- - **Umbrella Contract**: Central contract that manages the creation and approval of all access token sub-contracts.
- - **Role-Based Access Control**: Admins can create sub-contracts; reviewers are responsible for approving them.
- - **Sub-Contract Creation**: Uses OpenZeppelin's Clones library to create lightweight copies of a sub-contract template.
- - **Approval Process**: Each new sub-contract must be reviewed and approved by an authorized reviewer before becoming operational.
- - **Scalable Framework**: The umbrella contract allows consistent implementation of new access tokens while keeping flexibility for different access types.
- - **Notification Hooks**: Events are in place to help integrate off-chain notifications for contract creation and approval status changes in the future.
-*/

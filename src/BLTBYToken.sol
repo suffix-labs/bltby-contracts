@@ -145,15 +145,3 @@ contract BLTBYToken is
         // Further actions such as interacting with service contracts could be added here
     }
 }
-
-/*
- Key Features:
- - ERC-20 standard with 18 decimal places.
- - Initial supply: 100 million tokens, with a fixed max supply of 2.5 billion.
- - Minting controlled via MINTER_ROLE, with 5% yearly inflation cap and multi-sig approval.
- - Burn function for deflationary events and controlling token supply.
- - Internal redemption mechanism to allow tokens to be redeemed within the DAO ecosystem.
- - Initially admin-controlled, with pause and unpause mechanisms for security.
- - Custom errors for improved gas efficiency and clearer error handling.
- - Reentrancy guard applied to functions dealing with minting, burning, and redemption.
-*/

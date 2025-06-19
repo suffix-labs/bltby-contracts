@@ -89,11 +89,3 @@ contract TreasuryAndReserve is Ownable {
      */
     receive() external payable {}
 }
-
-/*
- Key Features:
- - Manual minting and burning of BLTBY tokens, with no cap on minting.
- - Integration with stablecoins (USDC, USDT, PYUSD) for buybacks, managed manually by administrators.
- - Initially admin-controlled, with a mechanism to transition to DAO governance in the future.
- - Other contracts can call minting functions, subject to permissions.
-*/
