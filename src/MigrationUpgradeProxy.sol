@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/proxy/transparent/TransparentUpgradeableProxy.sol";
+import "@openzeppelin/access/Ownable.sol";
 
 contract MigrationAndUpgradeProxy is Ownable {
     // Proxy contract address storage
     mapping(string => address) public proxies;
+
+    constructor(address initialOwner) Ownable(initialOwner) {}
 
     /**
      * @dev Deploy a new proxy contract for a given logic contract.

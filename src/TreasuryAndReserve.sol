@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Mintable.sol";
+import "@openzeppelin/token/ERC20/IERC20.sol";
+import "@openzeppelin/access/Ownable.sol";
+import "@openzeppelin/token/ERC20/extensions/ERC20Burnable.sol";
 
 contract TreasuryAndReserve is Ownable {
     // Token contracts for minting and burning
@@ -19,11 +18,12 @@ contract TreasuryAndReserve is Ownable {
     event BuybackExecuted(address indexed from, uint256 amount);
 
     constructor(
+        address initialOwner,
         address _BLTBYToken,
         address _USDC,
         address _USDT,
         address _PYUSD
-    ) {
+    ) Ownable(initialOwner) {
         BLTBYToken = IERC20(_BLTBYToken);
         USDC = IERC20(_USDC);
         USDT = IERC20(_USDT);
@@ -37,7 +37,7 @@ contract TreasuryAndReserve is Ownable {
      * @param amount The amount of tokens to mint.
      */
     function mintBLTBY(address to, uint256 amount) external onlyOwner {
-        ERC20Mintable(address(BLTBYToken)).mint(to, amount);
+        IERC20(address(BLTBYToken)).transfer(to, amount);
         emit Minted(to, amount);
     }
 

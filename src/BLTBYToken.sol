@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/token/ERC20/ERC20.sol";
+import "@openzeppelin/access/Ownable.sol";
+import "@openzeppelin/utils/Pausable.sol";
+import "@openzeppelin/access/AccessControl.sol";
+import "@openzeppelin/utils/ReentrancyGuard.sol";
 
 contract BLTBYToken is
     ERC20,
