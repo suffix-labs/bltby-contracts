@@ -63,8 +63,8 @@ contract Governance is AccessControl, ReentrancyGuard {
         address _membershipNFT,
         address _investorNFT
     ) {
-        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _setupRole(FOUNDER_DIRECTOR_ROLE, msg.sender);
+        grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        grantRole(FOUNDER_DIRECTOR_ROLE, msg.sender);
         bltbyToken = IERC20(_bltbyToken);
         membershipNFT = IERC721(_membershipNFT);
         investorNFT = IERC721(_investorNFT);

@@ -46,9 +46,11 @@ contract GeneralMembershipNFT is
     error TokenNonExistent(uint256 tokenId);
     error AlreadyHoldsMembershipNFT(address account);
 
-    constructor() ERC721("General Membership", "GMEM") {
-        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _setupRole(MINTER_ROLE, msg.sender);
+    constructor(
+        address initialOwner
+    ) ERC721("General Membership", "GMEM") Ownable(initialOwner) {
+        grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        grantRole(MINTER_ROLE, msg.sender);
         _tokenIdCounter = 1; // Start token IDs at 1
     }
 
@@ -129,9 +131,6 @@ contract GeneralMembershipNFT is
         bool isActiveMember,
         uint8 accessLevel
     ) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        if (!_exists(tokenId)) {
-            revert TokenNonExistent(tokenId);
-        }
         membershipDetails[tokenId].isActiveMember = isActiveMember;
         membershipDetails[tokenId].accessLevel = accessLevel;
         emit MembershipUpdated(tokenId, isActiveMember, accessLevel);
@@ -143,9 +142,6 @@ contract GeneralMembershipNFT is
      * @return True if the token belongs to an active member, otherwise false.
      */
     function isActiveMember(uint256 tokenId) external view returns (bool) {
-        if (!_exists(tokenId)) {
-            revert TokenNonExistent(tokenId);
-        }
         return membershipDetails[tokenId].isActiveMember;
     }
 
@@ -155,10 +151,19 @@ contract GeneralMembershipNFT is
      * @return Access level for the token.
      */
     function getAccessLevel(uint256 tokenId) external view returns (uint8) {
-        if (!_exists(tokenId)) {
-            revert TokenNonExistent(tokenId);
-        }
         return membershipDetails[tokenId].accessLevel;
+    }
+
+    function supportsInterface(
+        bytes4 interfaceId
+    )
+        public
+        view
+        virtual
+        override(AccessControl, ERC721URIStorage)
+        returns (bool)
+    {
+        return interfaceId == type(IERC165).interfaceId;
     }
 }
 

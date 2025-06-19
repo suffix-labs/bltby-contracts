@@ -34,11 +34,13 @@ contract BLTBYToken is
     error InsufficientRole(string role);
     error BurnFailed(address from, uint256 amount);
 
-    constructor() ERC20("BLTBY Token Contract", "BLTBY") {
+    constructor(
+        address initialOwner
+    ) ERC20("BLTBY Token Contract", "BLTBY") Ownable(initialOwner) {
         _mint(msg.sender, INITIAL_SUPPLY); // Initial mint to deployer
-        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _setupRole(MINTER_ROLE, msg.sender);
-        _setupRole(MULTISIG_ROLE, msg.sender);
+        grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        grantRole(MINTER_ROLE, msg.sender);
+        grantRole(MULTISIG_ROLE, msg.sender);
         lastMintTimestamp = block.timestamp;
     }
 

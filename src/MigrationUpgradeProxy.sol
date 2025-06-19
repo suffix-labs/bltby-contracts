@@ -40,36 +40,6 @@ contract MigrationAndUpgradeProxy is Ownable {
     ) external view returns (address) {
         return proxies[contractName];
     }
-
-    /**
-     * @dev Update the admin address of an existing proxy contract.
-     * @param contractName The name of the deployed contract.
-     * @param newAdminAddress The new admin address.
-     */
-    function updateProxyAdmin(
-        string memory contractName,
-        address newAdminAddress
-    ) external onlyOwner {
-        TransparentUpgradeableProxy proxy = TransparentUpgradeableProxy(
-            payable(proxies[contractName])
-        );
-        proxy.changeAdmin(newAdminAddress);
-    }
-
-    /**
-     * @dev Upgrade the implementation of an existing proxy contract.
-     * @param contractName The name of the deployed contract.
-     * @param newImplementation The address of the new logic contract.
-     */
-    function upgradeProxyImplementation(
-        string memory contractName,
-        address newImplementation
-    ) external onlyOwner {
-        TransparentUpgradeableProxy proxy = TransparentUpgradeableProxy(
-            payable(proxies[contractName])
-        );
-        proxy.upgradeTo(newImplementation);
-    }
 }
 
 /*

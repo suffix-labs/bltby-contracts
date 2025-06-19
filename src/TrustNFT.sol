@@ -37,9 +37,11 @@ contract TrustNFTContract is
     error UnauthorizedAccess();
     error TokenNonExistent(uint256 tokenId);
 
-    constructor() ERC721("Trust Membership", "TRUST") {
-        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _setupRole(MINTER_ROLE, msg.sender);
+    constructor(
+        address initialOwner
+    ) ERC721("Trust Membership", "TRUST") Ownable(initialOwner) {
+        grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        grantRole(MINTER_ROLE, msg.sender);
         _tokenIdCounter = 1; // Start token IDs at 1
     }
 
@@ -109,9 +111,6 @@ contract TrustNFTContract is
     function isInstitutionalInvestor(
         uint256 tokenId
     ) external view returns (bool) {
-        if (!_exists(tokenId)) {
-            revert TokenNonExistent(tokenId);
-        }
         return trustDetails[tokenId].isInstitutionalInvestor;
     }
 
@@ -123,9 +122,6 @@ contract TrustNFTContract is
     function getGovernanceWeight(
         uint256 tokenId
     ) external view returns (uint8) {
-        if (!_exists(tokenId)) {
-            revert TokenNonExistent(tokenId);
-        }
         return trustDetails[tokenId].governanceWeight;
     }
 
@@ -137,10 +133,19 @@ contract TrustNFTContract is
     function getInvestmentBenefitRate(
         uint256 tokenId
     ) external view returns (uint256) {
-        if (!_exists(tokenId)) {
-            revert TokenNonExistent(tokenId);
-        }
         return trustDetails[tokenId].investmentBenefitRate;
+    }
+
+    function supportsInterface(
+        bytes4 interfaceId
+    )
+        public
+        view
+        virtual
+        override(AccessControl, ERC721URIStorage)
+        returns (bool)
+    {
+        return interfaceId == type(IERC165).interfaceId;
     }
 }
 

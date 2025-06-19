@@ -37,9 +37,11 @@ contract FramerNFT is
     error UnauthorizedAccess();
     error TokenNonExistent(uint256 tokenId);
 
-    constructor() ERC721("Framer Membership", "FRMR") {
-        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _setupRole(MINTER_ROLE, msg.sender);
+    constructor(
+        address initialOwner
+    ) ERC721("Framer Membership", "FRMR") Ownable(initialOwner) {
+        grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        grantRole(MINTER_ROLE, msg.sender);
         _tokenIdCounter = 1; // Start token IDs at 1
     }
 
@@ -107,9 +109,6 @@ contract FramerNFT is
      * @return True if the token belongs to an early contributor, otherwise false.
      */
     function isEarlyContributor(uint256 tokenId) external view returns (bool) {
-        if (!_exists(tokenId)) {
-            revert TokenNonExistent(tokenId);
-        }
         return framerDetails[tokenId].isEarlyContributor;
     }
 
@@ -121,9 +120,6 @@ contract FramerNFT is
     function getGovernanceWeight(
         uint256 tokenId
     ) external view returns (uint8) {
-        if (!_exists(tokenId)) {
-            revert TokenNonExistent(tokenId);
-        }
         return framerDetails[tokenId].governanceWeight;
     }
 
@@ -133,10 +129,19 @@ contract FramerNFT is
      * @return True if the token has lifetime benefits, otherwise false.
      */
     function hasLifetimeBenefits(uint256 tokenId) external view returns (bool) {
-        if (!_exists(tokenId)) {
-            revert TokenNonExistent(tokenId);
-        }
         return framerDetails[tokenId].hasLifetimeBenefits;
+    }
+
+    function supportsInterface(
+        bytes4 interfaceId
+    )
+        public
+        view
+        virtual
+        override(AccessControl, ERC721URIStorage)
+        returns (bool)
+    {
+        return interfaceId == type(IERC165).interfaceId;
     }
 }
 

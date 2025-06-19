@@ -2,9 +2,9 @@
 pragma solidity ^0.8.28;
 
 import "@openzeppelin/token/ERC721/extensions/ERC721URIStorage.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/access/AccessControl.sol";
+import "@openzeppelin/access/Ownable.sol";
+import "@openzeppelin/utils/ReentrancyGuard.sol";
 
 contract VentureOneNFTContract is
     ERC721URIStorage,
@@ -37,9 +37,11 @@ contract VentureOneNFTContract is
     error UnauthorizedAccess();
     error TokenNonExistent(uint256 tokenId);
 
-    constructor() ERC721("Venture One Membership", "V1NFT") {
-        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _setupRole(MINTER_ROLE, msg.sender);
+    constructor(
+        address initialOwner
+    ) ERC721("Venture One Membership", "V1NFT") Ownable(initialOwner) {
+        grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        grantRole(MINTER_ROLE, msg.sender);
         _tokenIdCounter = 1; // Start token IDs at 1
     }
 
@@ -47,11 +49,11 @@ contract VentureOneNFTContract is
      * @dev Mint a new Venture One NFT.
      * Only an address with the MINTER_ROLE can mint new tokens.
      * @param to The address that will receive the minted NFT.
-     * @param isVentureRoundOne True if the recipient is part of the first venture round, otherwise false.
+     * @param _isVentureRoundOne True if the recipient is part of the first venture round, otherwise false.
      */
     function mintVentureOneNFT(
         address to,
-        bool isVentureRoundOne
+        bool _isVentureRoundOne
     ) external onlyRole(MINTER_ROLE) nonReentrant {
         uint256 tokenId = _tokenIdCounter;
         _safeMint(to, tokenId);
@@ -61,13 +63,13 @@ contract VentureOneNFTContract is
 
         // Set specific attributes for venture round one investors
         VentureOneAttributes memory attributes;
-        attributes.isVentureRoundOne = isVentureRoundOne;
-        attributes.governanceWeight = isVentureRoundOne ? 4 : 2; // Venture round one investors get higher governance weight
-        attributes.discountRate = isVentureRoundOne ? 20 : 10; // Discount rate for BLTBY token purchases
+        attributes.isVentureRoundOne = _isVentureRoundOne;
+        attributes.governanceWeight = _isVentureRoundOne ? 4 : 2; // Venture round one investors get higher governance weight
+        attributes.discountRate = _isVentureRoundOne ? 20 : 10; // Discount rate for BLTBY token purchases
         ventureOneDetails[tokenId] = attributes;
 
         _tokenIdCounter += 1;
-        emit VentureOneNFTMinted(to, tokenId, isVentureRoundOne);
+        emit VentureOneNFTMinted(to, tokenId, _isVentureRoundOne);
     }
 
     /**
@@ -107,9 +109,6 @@ contract VentureOneNFTContract is
      * @return True if the token belongs to a Venture Round One investor, otherwise false.
      */
     function isVentureRoundOne(uint256 tokenId) external view returns (bool) {
-        if (!_exists(tokenId)) {
-            revert TokenNonExistent(tokenId);
-        }
         return ventureOneDetails[tokenId].isVentureRoundOne;
     }
 
@@ -121,9 +120,6 @@ contract VentureOneNFTContract is
     function getGovernanceWeight(
         uint256 tokenId
     ) external view returns (uint8) {
-        if (!_exists(tokenId)) {
-            revert TokenNonExistent(tokenId);
-        }
         return ventureOneDetails[tokenId].governanceWeight;
     }
 
@@ -133,10 +129,19 @@ contract VentureOneNFTContract is
      * @return Discount rate for the token.
      */
     function getDiscountRate(uint256 tokenId) external view returns (uint256) {
-        if (!_exists(tokenId)) {
-            revert TokenNonExistent(tokenId);
-        }
         return ventureOneDetails[tokenId].discountRate;
+    }
+
+    function supportsInterface(
+        bytes4 interfaceId
+    )
+        public
+        view
+        virtual
+        override(AccessControl, ERC721URIStorage)
+        returns (bool)
+    {
+        return interfaceId == type(IERC165).interfaceId;
     }
 }
 

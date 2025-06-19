@@ -3,7 +3,6 @@ pragma solidity ^0.8.28;
 
 import "@openzeppelin/access/AccessControl.sol";
 import "@openzeppelin/utils/ReentrancyGuard.sol";
-import "@openzeppelin/utils/Counters.sol";
 import "@openzeppelin/proxy/Clones.sol";
 
 interface IAccessTokenSubContract {
@@ -17,8 +16,7 @@ interface IAccessTokenSubContract {
 }
 
 contract UmbrellaAccessTokenContract is AccessControl, ReentrancyGuard {
-    using Counters for Counters.Counter;
-    Counters.Counter private _subContractCounter;
+    uint256 private _subContractCounter;
 
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant REVIEWER_ROLE = keccak256("REVIEWER_ROLE");
@@ -54,8 +52,8 @@ contract UmbrellaAccessTokenContract is AccessControl, ReentrancyGuard {
     constructor(address _subContractTemplate) {
         require(_subContractTemplate != address(0), "Invalid template address");
         subContractTemplate = _subContractTemplate;
-        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _setupRole(ADMIN_ROLE, msg.sender);
+        grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        grantRole(ADMIN_ROLE, msg.sender);
     }
 
     /**
@@ -81,7 +79,7 @@ contract UmbrellaAccessTokenContract is AccessControl, ReentrancyGuard {
             tokenType
         );
 
-        uint256 subContractId = _subContractCounter.current();
+        uint256 subContractId = _subContractCounter;
         subContracts[subContractId] = SubContractInfo({
             contractAddress: clone,
             name: name,
@@ -91,7 +89,7 @@ contract UmbrellaAccessTokenContract is AccessControl, ReentrancyGuard {
         });
 
         existingSubContracts[clone] = true;
-        _subContractCounter.increment();
+        _subContractCounter++;
         emit SubContractCreated(subContractId, clone, name, tokenType);
     }
 
@@ -122,7 +120,7 @@ contract UmbrellaAccessTokenContract is AccessControl, ReentrancyGuard {
         if (!existingSubContracts[subContractAddress]) {
             revert InvalidSubContractAddress(subContractAddress);
         }
-        for (uint256 i = 0; i < _subContractCounter.current(); i++) {
+        for (uint256 i = 0; i < _subContractCounter; i++) {
             if (subContracts[i].contractAddress == subContractAddress) {
                 return subContracts[i].approved;
             }

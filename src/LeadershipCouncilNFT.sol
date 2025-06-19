@@ -38,9 +38,11 @@ contract LeadershipCouncilNFT is
     error UnauthorizedAccess();
     error TokenNonExistent(uint256 tokenId);
 
-    constructor() ERC721("Leadership Council Membership", "LDCN") {
-        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _setupRole(MINTER_ROLE, msg.sender);
+    constructor(
+        address initialOwner
+    ) ERC721("Leadership Council Membership", "LDCN") Ownable(initialOwner) {
+        grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        grantRole(MINTER_ROLE, msg.sender);
         _tokenIdCounter = 1; // Start token IDs at 1
     }
 
@@ -108,9 +110,6 @@ contract LeadershipCouncilNFT is
      * @return True if the token belongs to a Founder Director, otherwise false.
      */
     function isFounderDirector(uint256 tokenId) external view returns (bool) {
-        if (!_exists(tokenId)) {
-            revert TokenNonExistent(tokenId);
-        }
         return leadershipDetails[tokenId].isFounderDirector;
     }
 
@@ -120,9 +119,6 @@ contract LeadershipCouncilNFT is
      * @return Number of extra votes for the token.
      */
     function getExtraVotes(uint256 tokenId) external view returns (uint8) {
-        if (!_exists(tokenId)) {
-            revert TokenNonExistent(tokenId);
-        }
         return leadershipDetails[tokenId].extraVotes;
     }
 
@@ -132,10 +128,19 @@ contract LeadershipCouncilNFT is
      * @return True if the token has veto power, otherwise false.
      */
     function hasVetoPower(uint256 tokenId) external view returns (bool) {
-        if (!_exists(tokenId)) {
-            revert TokenNonExistent(tokenId);
-        }
         return leadershipDetails[tokenId].hasVetoPower;
+    }
+
+    function supportsInterface(
+        bytes4 interfaceId
+    )
+        public
+        view
+        virtual
+        override(AccessControl, ERC721URIStorage)
+        returns (bool)
+    {
+        return interfaceId == type(IERC165).interfaceId;
     }
 }
 

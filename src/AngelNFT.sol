@@ -37,9 +37,11 @@ contract AngelNFTContract is
     error UnauthorizedAccess();
     error TokenNonExistent(uint256 tokenId);
 
-    constructor() ERC721("Angel Membership", "ANGL") {
-        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _setupRole(MINTER_ROLE, msg.sender);
+    constructor(
+        address initialOwner
+    ) ERC721("Angel Membership", "ANGL") Ownable(initialOwner) {
+        grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        grantRole(MINTER_ROLE, msg.sender);
         _tokenIdCounter = 1; // Start token IDs at 1
     }
 
@@ -109,9 +111,6 @@ contract AngelNFTContract is
     function hasEarlyInvestorPrivileges(
         uint256 tokenId
     ) external view returns (bool) {
-        if (!_exists(tokenId)) {
-            revert TokenNonExistent(tokenId);
-        }
         return angelDetails[tokenId].hasEarlyInvestorPrivileges;
     }
 
@@ -123,9 +122,6 @@ contract AngelNFTContract is
     function getGovernanceWeight(
         uint256 tokenId
     ) external view returns (uint8) {
-        if (!_exists(tokenId)) {
-            revert TokenNonExistent(tokenId);
-        }
         return angelDetails[tokenId].governanceWeight;
     }
 
@@ -135,10 +131,19 @@ contract AngelNFTContract is
      * @return Discount rate for the token.
      */
     function getDiscountRate(uint256 tokenId) external view returns (uint256) {
-        if (!_exists(tokenId)) {
-            revert TokenNonExistent(tokenId);
-        }
         return angelDetails[tokenId].discountRate;
+    }
+
+    function supportsInterface(
+        bytes4 interfaceId
+    )
+        public
+        view
+        virtual
+        override(AccessControl, ERC721URIStorage)
+        returns (bool)
+    {
+        return interfaceId == type(IERC165).interfaceId;
     }
 }
 
