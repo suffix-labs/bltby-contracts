@@ -7,10 +7,10 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 
 contract TreasuryAndReserve is Ownable {
     // Token contracts for minting and burning
-    IERC20 public BLTBYToken;
-    IERC20 public USDC;
-    IERC20 public USDT;
-    IERC20 public PYUSD;
+    IERC20 public immutable BLTBYToken;
+    IERC20 public immutable USDC;
+    IERC20 public immutable USDT;
+    IERC20 public immutable PYUSD;
 
     // Events for minting, burning, and buybacks
     event Minted(address indexed to, uint256 amount);
@@ -37,7 +37,8 @@ contract TreasuryAndReserve is Ownable {
      * @param amount The amount of tokens to mint.
      */
     function mintBLTBY(address to, uint256 amount) external onlyOwner {
-        IERC20(address(BLTBYToken)).transfer(to, amount);
+        bool success = IERC20(address(BLTBYToken)).transfer(to, amount);
+        require(success, "Transfer failed");
         emit Minted(to, amount);
     }
 
@@ -85,7 +86,20 @@ contract TreasuryAndReserve is Ownable {
     }
 
     /**
-     * @dev Fallback function to receive stablecoins.
+     * @dev Withdraw accumulated ETH from the contract.
+     * @param to The address to send the ETH to.
+     */
+    function withdrawETH(address payable to) external onlyOwner {
+        require(to != address(0), "Invalid address");
+        uint256 balance = address(this).balance;
+        require(balance > 0, "No ETH to withdraw");
+        
+        (bool success, ) = to.call{value: balance}("");
+        require(success, "ETH transfer failed");
+    }
+
+    /**
+     * @dev Fallback function to receive ETH.
      */
     receive() external payable {}
 }
