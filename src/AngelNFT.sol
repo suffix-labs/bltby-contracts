@@ -12,7 +12,7 @@ contract AngelNFTContract is ERC721, AccessControl {
     struct AngelAttributes {
         bool hasEarlyInvestorPrivileges;
         uint8 governanceWeight;
-        uint8 discountRate; // Changed from uint256 to uint8 for values 0-255
+        uint8 discountRate; // only need values 0-255
     }
 
     mapping(uint256 => AngelAttributes) public angelDetails;
