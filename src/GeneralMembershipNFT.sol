@@ -47,10 +47,12 @@ contract GeneralMembershipNFT is ERC721, AccessControl {
         }
 
         uint256 tokenId = _tokenIdCounter++;
-        _safeMint(to, tokenId);
-
+        
+        // Update state variables before external call to prevent reentrancy
         _setMembershipAttributes(tokenId, _isActiveMember);
         hasMembershipNFT[to] = true;
+        
+        _safeMint(to, tokenId);
         emit GeneralMembershipNFTMinted(to, tokenId, _isActiveMember);
     }
 
