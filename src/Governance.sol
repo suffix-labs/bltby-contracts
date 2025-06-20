@@ -97,7 +97,8 @@ contract Governance is Initializable, AccessControlUpgradeable {
     }
 
     function _stakeTokens() private {
-        bltbyToken.transferFrom(msg.sender, address(this), STAKE_AMOUNT);
+        bool success = bltbyToken.transferFrom(msg.sender, address(this), STAKE_AMOUNT);
+        require(success, "Transfer failed");
         stakedBLTBY[msg.sender] += STAKE_AMOUNT;
     }
 
@@ -162,7 +163,8 @@ contract Governance is Initializable, AccessControlUpgradeable {
 
     function _returnStake(address proposer) private {
         stakedBLTBY[proposer] -= STAKE_AMOUNT;
-        bltbyToken.transfer(proposer, STAKE_AMOUNT);
+        bool success = bltbyToken.transfer(proposer, STAKE_AMOUNT);
+        require(success, "Transfer failed");
     }
 
     function vetoProposal(
