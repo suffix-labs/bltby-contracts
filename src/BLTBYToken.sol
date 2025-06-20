@@ -2,20 +2,22 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import "@openzeppelin/token/ERC20/ERC20.sol";
-import "@openzeppelin/access/Ownable.sol";
-import "@openzeppelin/utils/Pausable.sol";
-import "@openzeppelin/access/AccessControl.sol";
-import "@openzeppelin/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 contract BLTBYToken is
-    ERC20,
-    Ownable,
-    AccessControl,
-    Pausable,
-    ReentrancyGuard
+    Initializable,
+    ERC20Upgradeable,
+    OwnableUpgradeable,
+    AccessControlUpgradeable,
+    PausableUpgradeable,
+    ReentrancyGuardUpgradeable
 {
-    uint256 public immutable MAX_SUPPLY = 2_500_000_000 * 10 ** 18; // Total fixed supply of 2.5 billion tokens
+    uint256 public MAX_SUPPLY; // Total fixed supply of 2.5 billion tokens (changed from immutable)
     uint256 public constant MINT_CAP_PERCENTAGE = 5; // Up to 5% yearly inflation cap
     uint256 public constant INITIAL_SUPPLY = 100_000_000 * 10 ** 18; // Initial circulation supply of 100 million tokens
     uint256 public lastMintTimestamp;
@@ -32,9 +34,16 @@ contract BLTBYToken is
     error InsufficientRole(string role);
     error BurnFailed(address from, uint256 amount);
 
-    constructor(
+    function initialize(
         address initialOwner
-    ) ERC20("BLTBY Token Contract", "BLTBY") Ownable(initialOwner) {
+    ) public initializer {
+        __ERC20_init("BLTBY Token Contract", "BLTBY");
+        __Ownable_init(initialOwner);
+        __AccessControl_init();
+        __Pausable_init();
+        __ReentrancyGuard_init();
+        
+        MAX_SUPPLY = 2_500_000_000 * 10 ** 18; // Set MAX_SUPPLY in initialize
         _mint(initialOwner, INITIAL_SUPPLY); // Initial mint to deployer
         _grantRole(DEFAULT_ADMIN_ROLE, initialOwner);
         _grantRole(MINTER_ROLE, initialOwner);
@@ -142,4 +151,9 @@ contract BLTBYToken is
         emit Burned(msg.sender, amount);
         // Further actions such as interacting with service contracts could be added here
     }
+
+    /**
+     * @dev Storage gap for future upgrades
+     */
+    uint256[50] private __gap;
 }

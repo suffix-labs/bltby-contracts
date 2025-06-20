@@ -3,9 +3,12 @@ pragma solidity ^0.8.28;
 
 import {Test, console} from "forge-std/Test.sol";
 import "../src/BLTBYToken.sol";
+import "../src/MigrationUpgradeProxy.sol";
 
 contract BLTBYTokenTest is Test {
     BLTBYToken public bltbyToken;
+    MigrationAndUpgradeProxy public migrationProxy;
+
     address public owner;
     address public minter;
     address public recipient;
@@ -24,13 +27,37 @@ contract BLTBYTokenTest is Test {
         vm.deal(recipient, 100 ether);
 
         vm.startPrank(owner);
-        bltbyToken = new BLTBYToken(owner);
+
+        // Deploy migration proxy
+        migrationProxy = new MigrationAndUpgradeProxy(owner);
+
+        // Deploy implementation
+        BLTBYToken implementation = new BLTBYToken();
+
+        // Prepare initialization data
+        bytes memory initData = abi.encodeWithSignature(
+            "initialize(address)",
+            owner
+        );
+
+        // Deploy proxy via migration proxy
+        migrationProxy.deployProxy(
+            address(implementation),
+            initData,
+            "BLTBYToken"
+        );
+
+        // Get proxy address and cast to BLTBYToken interface
+        address proxyAddress = migrationProxy.getProxyAddress("BLTBYToken");
+        bltbyToken = BLTBYToken(proxyAddress);
+
+        // Grant roles
         bltbyToken.grantRole(MINTER_ROLE, minter);
         bltbyToken.grantRole(MULTISIG_ROLE, minter);
         vm.stopPrank();
     }
 
-    function testInitialState() public {
+    function testInitialState() public view {
         assertEq(bltbyToken.name(), "BLTBY Token Contract");
         assertEq(bltbyToken.symbol(), "BLTBY");
         assertEq(bltbyToken.decimals(), 18);
@@ -100,5 +127,28 @@ contract BLTBYTokenTest is Test {
         bltbyToken.mint(recipient, mintAmount);
 
         assertEq(bltbyToken.balanceOf(recipient), mintAmount);
+    }
+
+    function testUpgrade() public {
+        // Deploy new implementation
+        BLTBYToken newImplementation = new BLTBYToken();
+
+        // Store original state
+        uint256 originalBalance = bltbyToken.balanceOf(owner);
+        string memory originalName = bltbyToken.name();
+
+        // Upgrade the proxy using migration proxy
+        vm.prank(owner);
+        migrationProxy.upgradeProxy("BLTBYToken", address(newImplementation));
+
+        // Verify state is preserved after upgrade
+        assertEq(bltbyToken.balanceOf(owner), originalBalance);
+        assertEq(bltbyToken.name(), originalName);
+        assertEq(bltbyToken.MAX_SUPPLY(), 2_500_000_000 * 10 ** 18);
+    }
+
+    function testCannotInitializeTwice() public {
+        vm.expectRevert();
+        bltbyToken.initialize(owner);
     }
 }

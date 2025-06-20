@@ -4,6 +4,8 @@ pragma solidity ^0.8.28;
 import {Test, console} from "forge-std/Test.sol";
 import "../src/TreasuryAndReserve.sol";
 import "../src/BLTBYToken.sol";
+import "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
+import "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
 
 contract MockERC20 is ERC20 {
     constructor(string memory name, string memory symbol) ERC20(name, symbol) {
@@ -14,6 +16,10 @@ contract MockERC20 is ERC20 {
 contract TreasuryAndReserveTest is Test {
     TreasuryAndReserve public treasury;
     BLTBYToken public bltbyToken;
+    BLTBYToken public tokenImplementation;
+    TransparentUpgradeableProxy public tokenProxy;
+    ProxyAdmin public tokenProxyAdmin;
+    
     MockERC20 public usdc;
     MockERC20 public usdt;
     MockERC20 public pyusd;
@@ -27,7 +33,16 @@ contract TreasuryAndReserveTest is Test {
 
         vm.startPrank(owner);
 
-        bltbyToken = new BLTBYToken(owner);
+        // Deploy BLTBYToken via proxy
+        tokenImplementation = new BLTBYToken();
+        tokenProxyAdmin = new ProxyAdmin(owner);
+        bytes memory tokenInitData = abi.encodeWithSignature("initialize(address)", owner);
+        tokenProxy = new TransparentUpgradeableProxy(
+            address(tokenImplementation),
+            address(tokenProxyAdmin),
+            tokenInitData
+        );
+        bltbyToken = BLTBYToken(address(tokenProxy));
         usdc = new MockERC20("USD Coin", "USDC");
         usdt = new MockERC20("Tether USD", "USDT");
         pyusd = new MockERC20("PayPal USD", "PYUSD");

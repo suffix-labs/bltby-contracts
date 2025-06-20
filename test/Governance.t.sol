@@ -6,10 +6,13 @@ import "../src/Governance.sol";
 import "../src/BLTBYToken.sol";
 import "../src/GeneralMembershipNFT.sol";
 import "../src/AngelNFT.sol";
+import "../src/MigrationUpgradeProxy.sol";
 
 contract GovernanceTest is Test {
     Governance public governance;
     BLTBYToken public bltbyToken;
+    MigrationAndUpgradeProxy public migrationProxy;
+
     GeneralMembershipNFT public membershipNFT;
     AngelNFTContract public investorNFT;
 
@@ -28,15 +31,41 @@ contract GovernanceTest is Test {
 
         vm.startPrank(owner);
 
-        bltbyToken = new BLTBYToken(owner);
+        // Deploy migration proxy
+        migrationProxy = new MigrationAndUpgradeProxy(owner);
+
+        // Deploy BLTBYToken via proxy
+        BLTBYToken tokenImplementation = new BLTBYToken();
+        bytes memory tokenInitData = abi.encodeWithSignature(
+            "initialize(address)",
+            owner
+        );
+        migrationProxy.deployProxy(
+            address(tokenImplementation),
+            tokenInitData,
+            "BLTBYToken"
+        );
+        bltbyToken = BLTBYToken(migrationProxy.getProxyAddress("BLTBYToken"));
+
+        // Deploy NFT contracts (keeping them non-upgradeable for simplicity)
         membershipNFT = new GeneralMembershipNFT(owner);
         investorNFT = new AngelNFTContract(owner);
 
-        governance = new Governance(
+        // Deploy Governance via proxy
+        Governance governanceImplementation = new Governance();
+        bytes memory governanceInitData = abi.encodeWithSignature(
+            "initialize(address,address,address,address)",
             address(bltbyToken),
             address(membershipNFT),
-            address(investorNFT)
+            address(investorNFT),
+            owner
         );
+        migrationProxy.deployProxy(
+            address(governanceImplementation),
+            governanceInitData,
+            "Governance"
+        );
+        governance = Governance(migrationProxy.getProxyAddress("Governance"));
 
         governance.grantRole(PROPOSER_ROLE, proposer);
         governance.grantRole(LEADERSHIP_ROLE, voter);
@@ -59,12 +88,12 @@ contract GovernanceTest is Test {
             uint256 id,
             address creator,
             string memory description,
-            uint256 creationTime,
-            uint256 endTime,
+            ,
+            ,
             uint8 category,
             bool resolved,
             bool vetoed,
-            uint256 totalVotes,
+            ,
             uint256 leadershipVotes
         ) = governance.proposals(1);
 
@@ -142,5 +171,38 @@ contract GovernanceTest is Test {
 
         assertTrue(resolved);
         assertTrue(vetoed);
+    }
+
+    function testGovernanceUpgrade() public {
+        // Create a proposal first to have some state
+        vm.prank(proposer);
+        governance.createProposal("Test proposal", 7 days, 0);
+
+        // Store original state
+        (uint256 id, address creator, , , , , , , , ) = governance.proposals(1);
+
+        // Deploy new implementation
+        Governance newImplementation = new Governance();
+
+        // Upgrade the governance proxy
+        vm.prank(owner);
+        migrationProxy.upgradeProxy("Governance", address(newImplementation));
+
+        // Verify state is preserved after upgrade
+        (uint256 newId, address newCreator, , , , , , , , ) = governance
+            .proposals(1);
+        assertEq(newId, id);
+        assertEq(newCreator, creator);
+        assertEq(governance.proposalCounter(), 2);
+    }
+
+    function testCannotInitializeGovernanceTwice() public {
+        vm.expectRevert();
+        governance.initialize(
+            address(bltbyToken),
+            address(membershipNFT),
+            address(investorNFT),
+            owner
+        );
     }
 }

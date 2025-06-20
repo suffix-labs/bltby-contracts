@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import "@openzeppelin/access/AccessControl.sol";
-import "@openzeppelin/utils/ReentrancyGuard.sol";
-import "@openzeppelin/proxy/Clones.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/proxy/Clones.sol";
 
 interface IAccessTokenSubContract {
     function initialize(

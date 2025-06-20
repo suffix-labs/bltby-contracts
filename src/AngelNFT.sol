@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import "@openzeppelin/token/ERC721/ERC721.sol";
-import "@openzeppelin/access/AccessControl.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 
 contract AngelNFTContract is ERC721, AccessControl {
     uint256 private _tokenIdCounter;
@@ -17,7 +17,11 @@ contract AngelNFTContract is ERC721, AccessControl {
 
     mapping(uint256 => AngelAttributes) public angelDetails;
 
-    event AngelNFTMinted(address indexed to, uint256 tokenId, bool hasEarlyInvestorPrivileges);
+    event AngelNFTMinted(
+        address indexed to,
+        uint256 tokenId,
+        bool hasEarlyInvestorPrivileges
+    );
     event AngelNFTBurned(uint256 tokenId);
 
     error UnauthorizedAccess();
@@ -28,15 +32,21 @@ contract AngelNFTContract is ERC721, AccessControl {
         _tokenIdCounter = 1;
     }
 
-    function mintAngelNFT(address to, bool _hasEarlyInvestorPrivileges) external onlyRole(MINTER_ROLE) {
+    function mintAngelNFT(
+        address to,
+        bool _hasEarlyInvestorPrivileges
+    ) external onlyRole(MINTER_ROLE) {
         uint256 tokenId = _tokenIdCounter++;
         _safeMint(to, tokenId);
-        
+
         _setAngelAttributes(tokenId, _hasEarlyInvestorPrivileges);
         emit AngelNFTMinted(to, tokenId, _hasEarlyInvestorPrivileges);
     }
 
-    function _setAngelAttributes(uint256 tokenId, bool _hasEarlyInvestorPrivileges) private {
+    function _setAngelAttributes(
+        uint256 tokenId,
+        bool _hasEarlyInvestorPrivileges
+    ) private {
         angelDetails[tokenId] = AngelAttributes({
             hasEarlyInvestorPrivileges: _hasEarlyInvestorPrivileges,
             governanceWeight: _hasEarlyInvestorPrivileges ? 3 : 1,
@@ -54,12 +64,15 @@ contract AngelNFTContract is ERC721, AccessControl {
         emit AngelNFTBurned(tokenId);
     }
 
-
-    function hasEarlyInvestorPrivileges(uint256 tokenId) external view returns (bool) {
+    function hasEarlyInvestorPrivileges(
+        uint256 tokenId
+    ) external view returns (bool) {
         return angelDetails[tokenId].hasEarlyInvestorPrivileges;
     }
 
-    function getGovernanceWeight(uint256 tokenId) external view returns (uint8) {
+    function getGovernanceWeight(
+        uint256 tokenId
+    ) external view returns (uint8) {
         return angelDetails[tokenId].governanceWeight;
     }
 
@@ -67,7 +80,9 @@ contract AngelNFTContract is ERC721, AccessControl {
         return angelDetails[tokenId].discountRate;
     }
 
-    function supportsInterface(bytes4 interfaceId) public view virtual override(AccessControl, ERC721) returns (bool) {
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view virtual override(AccessControl, ERC721) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 }
