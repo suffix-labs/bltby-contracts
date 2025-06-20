@@ -10,8 +10,7 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 contract Governance is Initializable, AccessControlUpgradeable {
     bytes32 public constant PROPOSER_ROLE = keccak256("PROPOSER_ROLE");
     bytes32 public constant LEADERSHIP_ROLE = keccak256("LEADERSHIP_ROLE");
-    bytes32 public constant FOUNDER_DIRECTOR_ROLE =
-        keccak256("FOUNDER_DIRECTOR_ROLE");
+    bytes32 public constant FOUNDER_DIRECTOR_ROLE = keccak256("FOUNDER_DIRECTOR_ROLE");
 
     IERC20 public bltbyToken;
     IERC721 public membershipNFT;
@@ -38,12 +37,7 @@ contract Governance is Initializable, AccessControlUpgradeable {
     mapping(uint256 => mapping(uint256 => uint8)) public votes; // proposalId => nftId => vote
     mapping(address => uint256) public stakedBLTBY;
 
-    event ProposalCreated(
-        uint256 proposalId,
-        address proposer,
-        string description,
-        uint256 endTime
-    );
+    event ProposalCreated(uint256 proposalId, address proposer, string description, uint256 endTime);
     event Voted(uint256 proposalId, address voter, uint256 nftId, uint8 vote);
     event ProposalResolved(uint256 proposalId, bool approved);
     event ProposalVetoed(uint256 proposalId);
@@ -55,12 +49,10 @@ contract Governance is Initializable, AccessControlUpgradeable {
     error ProposalAlreadyResolved(uint256 proposalId);
     error LeadershipQuorumNotMet(uint256 proposalId);
 
-    function initialize(
-        address _bltbyToken,
-        address _membershipNFT,
-        address _investorNFT,
-        address _admin
-    ) public initializer {
+    function initialize(address _bltbyToken, address _membershipNFT, address _investorNFT, address _admin)
+        public
+        initializer
+    {
         __AccessControl_init();
         _grantRole(DEFAULT_ADMIN_ROLE, _admin);
         _grantRole(FOUNDER_DIRECTOR_ROLE, _admin);
@@ -70,30 +62,22 @@ contract Governance is Initializable, AccessControlUpgradeable {
         proposalCounter = 1;
     }
 
-    function createProposal(
-        string memory description,
-        uint256 duration,
-        uint8 category
-    ) external {
+    function createProposal(string memory description, uint256 duration, uint8 category) external {
         _validateProposalCreation(category);
         _stakeTokens();
 
         uint256 proposalId = proposalCounter++;
         _createNewProposal(proposalId, description, duration, category);
 
-        emit ProposalCreated(
-            proposalId,
-            msg.sender,
-            description,
-            block.timestamp + duration
-        );
+        emit ProposalCreated(proposalId, msg.sender, description, block.timestamp + duration);
     }
 
     function _validateProposalCreation(uint8 category) private view {
         if (!hasRole(PROPOSER_ROLE, msg.sender)) revert Unauthorized();
         if (category > 2) revert InvalidCategory(category);
-        if (bltbyToken.balanceOf(msg.sender) < STAKE_AMOUNT)
+        if (bltbyToken.balanceOf(msg.sender) < STAKE_AMOUNT) {
             revert InsufficientStake();
+        }
     }
 
     function _stakeTokens() private {
@@ -102,12 +86,9 @@ contract Governance is Initializable, AccessControlUpgradeable {
         stakedBLTBY[msg.sender] += STAKE_AMOUNT;
     }
 
-    function _createNewProposal(
-        uint256 proposalId,
-        string memory description,
-        uint256 duration,
-        uint8 category
-    ) private {
+    function _createNewProposal(uint256 proposalId, string memory description, uint256 duration, uint8 category)
+        private
+    {
         proposals[proposalId] = Proposal({
             id: proposalId,
             proposer: msg.sender,
@@ -137,8 +118,9 @@ contract Governance is Initializable, AccessControlUpgradeable {
 
     function _validateVote(uint256 proposalId, uint256 nftId) private view {
         Proposal storage proposal = proposals[proposalId];
-        if (block.timestamp > proposal.endTime)
+        if (block.timestamp > proposal.endTime) {
             revert VotingPeriodOver(proposalId);
+        }
         if (proposal.resolved) revert ProposalAlreadyResolved(proposalId);
         if (!_canVote(msg.sender, nftId)) revert Unauthorized();
     }
@@ -150,8 +132,7 @@ contract Governance is Initializable, AccessControlUpgradeable {
             revert LeadershipQuorumNotMet(proposalId);
         }
 
-        bool approved = proposal.totalVotes >=
-            _getApprovalThreshold(proposal.category);
+        bool approved = proposal.totalVotes >= _getApprovalThreshold(proposal.category);
         proposal.resolved = true;
 
         if (approved) {
@@ -167,9 +148,7 @@ contract Governance is Initializable, AccessControlUpgradeable {
         require(success, "Transfer failed");
     }
 
-    function vetoProposal(
-        uint256 proposalId
-    ) external onlyRole(FOUNDER_DIRECTOR_ROLE) {
+    function vetoProposal(uint256 proposalId) external onlyRole(FOUNDER_DIRECTOR_ROLE) {
         if (!hasRole(LEADERSHIP_ROLE, msg.sender)) revert Unauthorized();
 
         Proposal storage proposal = proposals[proposalId];
@@ -178,10 +157,7 @@ contract Governance is Initializable, AccessControlUpgradeable {
         emit ProposalVetoed(proposalId);
     }
 
-    function _canVote(
-        address voter,
-        uint256 nftId
-    ) internal view returns (bool) {
+    function _canVote(address voter, uint256 nftId) internal view returns (bool) {
         try membershipNFT.ownerOf(nftId) returns (address owner) {
             if (owner == voter) return true;
         } catch {}
@@ -197,19 +173,14 @@ contract Governance is Initializable, AccessControlUpgradeable {
         return 2;
     }
 
-    function _getApprovalThreshold(
-        uint8 category
-    ) internal pure returns (uint256) {
+    function _getApprovalThreshold(uint8 category) internal pure returns (uint256) {
         if (category == 0) return 50;
         if (category == 1) return 60;
         if (category == 2) return 65;
         return 100;
     }
 
-    function getVote(
-        uint256 proposalId,
-        uint256 nftId
-    ) external view returns (uint8) {
+    function getVote(uint256 proposalId, uint256 nftId) external view returns (uint8) {
         return votes[proposalId][nftId];
     }
 

@@ -17,27 +17,18 @@ contract LeadershipCouncilNFT is ERC721, AccessControl {
 
     mapping(uint256 => LeadershipAttributes) public leadershipDetails;
 
-    event LeadershipCouncilMinted(
-        address indexed to,
-        uint256 tokenId,
-        bool isFounderDirector
-    );
+    event LeadershipCouncilMinted(address indexed to, uint256 tokenId, bool isFounderDirector);
     event LeadershipCouncilBurned(uint256 tokenId);
 
     error UnauthorizedAccess();
 
-    constructor(
-        address initialOwner
-    ) ERC721("Leadership Council Membership", "LDCN") {
+    constructor(address initialOwner) ERC721("Leadership Council Membership", "LDCN") {
         _grantRole(DEFAULT_ADMIN_ROLE, initialOwner);
         _grantRole(MINTER_ROLE, initialOwner);
         _tokenIdCounter = 1;
     }
 
-    function mintLeadershipNFT(
-        address to,
-        bool _isFounderDirector
-    ) external onlyRole(MINTER_ROLE) {
+    function mintLeadershipNFT(address to, bool _isFounderDirector) external onlyRole(MINTER_ROLE) {
         uint256 tokenId = _tokenIdCounter++;
         _safeMint(to, tokenId);
 
@@ -45,10 +36,7 @@ contract LeadershipCouncilNFT is ERC721, AccessControl {
         emit LeadershipCouncilMinted(to, tokenId, _isFounderDirector);
     }
 
-    function _setLeadershipAttributes(
-        uint256 tokenId,
-        bool _isFounderDirector
-    ) private {
+    function _setLeadershipAttributes(uint256 tokenId, bool _isFounderDirector) private {
         leadershipDetails[tokenId] = LeadershipAttributes({
             isFounderDirector: _isFounderDirector,
             extraVotes: _isFounderDirector ? 3 : 0,
@@ -78,9 +66,7 @@ contract LeadershipCouncilNFT is ERC721, AccessControl {
         return leadershipDetails[tokenId].hasVetoPower;
     }
 
-    function supportsInterface(
-        bytes4 interfaceId
-    ) public view virtual override(AccessControl, ERC721) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(AccessControl, ERC721) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 }

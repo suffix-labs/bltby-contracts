@@ -6,13 +6,8 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/proxy/Clones.sol";
 
 interface IAccessTokenSubContract {
-    function initialize(
-        string memory _name,
-        string memory _symbol,
-        address _admin,
-        uint256 _duration,
-        uint8 _tokenType
-    ) external;
+    function initialize(string memory _name, string memory _symbol, address _admin, uint256 _duration, uint8 _tokenType)
+        external;
 }
 
 contract UmbrellaAccessTokenContract is AccessControl, ReentrancyGuard {
@@ -34,16 +29,8 @@ contract UmbrellaAccessTokenContract is AccessControl, ReentrancyGuard {
     mapping(uint256 => SubContractInfo) public subContracts;
     mapping(address => bool) public existingSubContracts;
 
-    event SubContractCreated(
-        uint256 indexed subContractId,
-        address contractAddress,
-        string name,
-        uint8 tokenType
-    );
-    event SubContractApproved(
-        uint256 indexed subContractId,
-        address contractAddress
-    );
+    event SubContractCreated(uint256 indexed subContractId, address contractAddress, string name, uint8 tokenType);
+    event SubContractApproved(uint256 indexed subContractId, address contractAddress);
 
     error Unauthorized();
     error SubContractAlreadyApproved(uint256 subContractId);
@@ -64,20 +51,13 @@ contract UmbrellaAccessTokenContract is AccessControl, ReentrancyGuard {
      * @param duration The duration for which access tokens issued by this sub-contract will be valid.
      * @param tokenType The type of the token (e.g., 0 for Gym, 1 for Event, etc.).
      */
-    function createSubContract(
-        string memory name,
-        string memory symbol,
-        uint256 duration,
-        uint8 tokenType
-    ) external onlyRole(ADMIN_ROLE) nonReentrant {
+    function createSubContract(string memory name, string memory symbol, uint256 duration, uint8 tokenType)
+        external
+        onlyRole(ADMIN_ROLE)
+        nonReentrant
+    {
         address clone = Clones.clone(subContractTemplate);
-        IAccessTokenSubContract(clone).initialize(
-            name,
-            symbol,
-            msg.sender,
-            duration,
-            tokenType
-        );
+        IAccessTokenSubContract(clone).initialize(name, symbol, msg.sender, duration, tokenType);
 
         uint256 subContractId = _subContractCounter;
         subContracts[subContractId] = SubContractInfo({
@@ -98,9 +78,7 @@ contract UmbrellaAccessTokenContract is AccessControl, ReentrancyGuard {
      * Only an address with the REVIEWER_ROLE can approve a sub-contract.
      * @param subContractId The ID of the sub-contract to approve.
      */
-    function approveSubContract(
-        uint256 subContractId
-    ) external onlyRole(REVIEWER_ROLE) nonReentrant {
+    function approveSubContract(uint256 subContractId) external onlyRole(REVIEWER_ROLE) nonReentrant {
         SubContractInfo storage subContract = subContracts[subContractId];
         if (subContract.approved) {
             revert SubContractAlreadyApproved(subContractId);
@@ -114,9 +92,7 @@ contract UmbrellaAccessTokenContract is AccessControl, ReentrancyGuard {
      * @param subContractAddress The address of the sub-contract to verify.
      * @return True if the sub-contract is approved and valid, otherwise false.
      */
-    function isSubContractApproved(
-        address subContractAddress
-    ) external view returns (bool) {
+    function isSubContractApproved(address subContractAddress) external view returns (bool) {
         if (!existingSubContracts[subContractAddress]) {
             revert InvalidSubContractAddress(subContractAddress);
         }

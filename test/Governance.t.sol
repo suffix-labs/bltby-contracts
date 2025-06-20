@@ -36,15 +36,8 @@ contract GovernanceTest is Test {
 
         // Deploy BLTBYToken via proxy
         BLTBYToken tokenImplementation = new BLTBYToken();
-        bytes memory tokenInitData = abi.encodeWithSignature(
-            "initialize(address)",
-            owner
-        );
-        migrationProxy.deployProxy(
-            address(tokenImplementation),
-            tokenInitData,
-            "BLTBYToken"
-        );
+        bytes memory tokenInitData = abi.encodeWithSignature("initialize(address)", owner);
+        migrationProxy.deployProxy(address(tokenImplementation), tokenInitData, "BLTBYToken");
         bltbyToken = BLTBYToken(migrationProxy.getProxyAddress("BLTBYToken"));
 
         // Deploy NFT contracts (keeping them non-upgradeable for simplicity)
@@ -60,11 +53,7 @@ contract GovernanceTest is Test {
             address(investorNFT),
             owner
         );
-        migrationProxy.deployProxy(
-            address(governanceImplementation),
-            governanceInitData,
-            "Governance"
-        );
+        migrationProxy.deployProxy(address(governanceImplementation), governanceInitData, "Governance");
         governance = Governance(migrationProxy.getProxyAddress("Governance"));
 
         governance.grantRole(PROPOSER_ROLE, proposer);
@@ -114,18 +103,7 @@ contract GovernanceTest is Test {
         vm.prank(voter);
         governance.vote(1, 1, 1);
 
-        (
-            ,
-            ,
-            ,
-            ,
-            ,
-            ,
-            ,
-            ,
-            uint256 totalVotes,
-            uint256 leadershipVotes
-        ) = governance.proposals(1);
+        (,,,,,,,, uint256 totalVotes, uint256 leadershipVotes) = governance.proposals(1);
 
         assertEq(totalVotes, 1);
         assertEq(leadershipVotes, 1);
@@ -152,7 +130,7 @@ contract GovernanceTest is Test {
 
         governance.resolveProposal(1);
 
-        (, , , , , , bool resolved, , , ) = governance.proposals(1);
+        (,,,,,, bool resolved,,,) = governance.proposals(1);
 
         assertTrue(resolved);
     }
@@ -167,7 +145,7 @@ contract GovernanceTest is Test {
         vm.prank(owner);
         governance.vetoProposal(1);
 
-        (, , , , , , bool resolved, bool vetoed, , ) = governance.proposals(1);
+        (,,,,,, bool resolved, bool vetoed,,) = governance.proposals(1);
 
         assertTrue(resolved);
         assertTrue(vetoed);
@@ -179,7 +157,7 @@ contract GovernanceTest is Test {
         governance.createProposal("Test proposal", 7 days, 0);
 
         // Store original state
-        (uint256 id, address creator, , , , , , , , ) = governance.proposals(1);
+        (uint256 id, address creator,,,,,,,,) = governance.proposals(1);
 
         // Deploy new implementation
         Governance newImplementation = new Governance();
@@ -189,8 +167,7 @@ contract GovernanceTest is Test {
         migrationProxy.upgradeProxy("Governance", address(newImplementation));
 
         // Verify state is preserved after upgrade
-        (uint256 newId, address newCreator, , , , , , , , ) = governance
-            .proposals(1);
+        (uint256 newId, address newCreator,,,,,,,,) = governance.proposals(1);
         assertEq(newId, id);
         assertEq(newCreator, creator);
         assertEq(governance.proposalCounter(), 2);
@@ -198,11 +175,6 @@ contract GovernanceTest is Test {
 
     function testCannotInitializeGovernanceTwice() public {
         vm.expectRevert();
-        governance.initialize(
-            address(bltbyToken),
-            address(membershipNFT),
-            address(investorNFT),
-            owner
-        );
+        governance.initialize(address(bltbyToken), address(membershipNFT), address(investorNFT), owner);
     }
 }

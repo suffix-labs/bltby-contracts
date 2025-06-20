@@ -9,7 +9,7 @@ contract GeneralMembershipNFTTest is Test {
     address public owner;
     address public minter;
     address public recipient;
-    
+
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant DEFAULT_ADMIN_ROLE = 0x00;
 
@@ -17,7 +17,7 @@ contract GeneralMembershipNFTTest is Test {
         owner = makeAddr("owner");
         minter = makeAddr("minter");
         recipient = makeAddr("recipient");
-        
+
         vm.startPrank(owner);
         membershipNFT = new GeneralMembershipNFT(owner);
         membershipNFT.grantRole(MINTER_ROLE, minter);
@@ -27,7 +27,7 @@ contract GeneralMembershipNFTTest is Test {
     function testMintGeneralMembershipNFTActiveMember() public {
         vm.prank(minter);
         membershipNFT.mintGeneralMembershipNFT(recipient, true);
-        
+
         assertEq(membershipNFT.ownerOf(1), recipient);
         assertTrue(membershipNFT.isActiveMember(1));
         assertEq(membershipNFT.getAccessLevel(1), 1);
@@ -37,7 +37,7 @@ contract GeneralMembershipNFTTest is Test {
     function testMintGeneralMembershipNFTInactiveMember() public {
         vm.prank(minter);
         membershipNFT.mintGeneralMembershipNFT(recipient, false);
-        
+
         assertEq(membershipNFT.ownerOf(1), recipient);
         assertFalse(membershipNFT.isActiveMember(1));
         assertEq(membershipNFT.getAccessLevel(1), 0);
@@ -47,10 +47,10 @@ contract GeneralMembershipNFTTest is Test {
     function testUpdateMembership() public {
         vm.prank(minter);
         membershipNFT.mintGeneralMembershipNFT(recipient, false);
-        
+
         vm.prank(owner);
         membershipNFT.updateMembership(1, true, 2);
-        
+
         assertTrue(membershipNFT.isActiveMember(1));
         assertEq(membershipNFT.getAccessLevel(1), 2);
     }
@@ -58,10 +58,10 @@ contract GeneralMembershipNFTTest is Test {
     function testBurnGeneralMembershipNFTByOwner() public {
         vm.prank(minter);
         membershipNFT.mintGeneralMembershipNFT(recipient, true);
-        
+
         vm.prank(recipient);
         membershipNFT.burnGeneralMembershipNFT(1);
-        
+
         vm.expectRevert();
         membershipNFT.ownerOf(1);
         assertFalse(membershipNFT.hasMembershipNFT(recipient));
@@ -70,15 +70,14 @@ contract GeneralMembershipNFTTest is Test {
     function testBurnGeneralMembershipNFTByAdmin() public {
         vm.prank(minter);
         membershipNFT.mintGeneralMembershipNFT(recipient, true);
-        
+
         vm.prank(owner);
         membershipNFT.burnGeneralMembershipNFT(1);
-        
+
         vm.expectRevert();
         membershipNFT.ownerOf(1);
         assertFalse(membershipNFT.hasMembershipNFT(recipient));
     }
-
 
     function testSupportsInterface() public {
         assertTrue(membershipNFT.supportsInterface(type(IERC165).interfaceId));

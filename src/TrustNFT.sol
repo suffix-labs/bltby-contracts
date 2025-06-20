@@ -17,11 +17,7 @@ contract TrustNFTContract is ERC721, AccessControl {
 
     mapping(uint256 => TrustAttributes) public trustDetails;
 
-    event TrustNFTMinted(
-        address indexed to,
-        uint256 tokenId,
-        bool isInstitutionalInvestor
-    );
+    event TrustNFTMinted(address indexed to, uint256 tokenId, bool isInstitutionalInvestor);
     event TrustNFTBurned(uint256 tokenId);
 
     error UnauthorizedAccess();
@@ -32,10 +28,7 @@ contract TrustNFTContract is ERC721, AccessControl {
         _tokenIdCounter = 1;
     }
 
-    function mintTrustNFT(
-        address to,
-        bool _isInstitutionalInvestor
-    ) external onlyRole(MINTER_ROLE) {
+    function mintTrustNFT(address to, bool _isInstitutionalInvestor) external onlyRole(MINTER_ROLE) {
         uint256 tokenId = _tokenIdCounter++;
         _safeMint(to, tokenId);
 
@@ -43,10 +36,7 @@ contract TrustNFTContract is ERC721, AccessControl {
         emit TrustNFTMinted(to, tokenId, _isInstitutionalInvestor);
     }
 
-    function _setTrustAttributes(
-        uint256 tokenId,
-        bool _isInstitutionalInvestor
-    ) private {
+    function _setTrustAttributes(uint256 tokenId, bool _isInstitutionalInvestor) private {
         trustDetails[tokenId] = TrustAttributes({
             isInstitutionalInvestor: _isInstitutionalInvestor,
             governanceWeight: _isInstitutionalInvestor ? 5 : 3,
@@ -64,27 +54,19 @@ contract TrustNFTContract is ERC721, AccessControl {
         emit TrustNFTBurned(tokenId);
     }
 
-    function isInstitutionalInvestor(
-        uint256 tokenId
-    ) external view returns (bool) {
+    function isInstitutionalInvestor(uint256 tokenId) external view returns (bool) {
         return trustDetails[tokenId].isInstitutionalInvestor;
     }
 
-    function getGovernanceWeight(
-        uint256 tokenId
-    ) external view returns (uint8) {
+    function getGovernanceWeight(uint256 tokenId) external view returns (uint8) {
         return trustDetails[tokenId].governanceWeight;
     }
 
-    function getInvestmentBenefitRate(
-        uint256 tokenId
-    ) external view returns (uint8) {
+    function getInvestmentBenefitRate(uint256 tokenId) external view returns (uint8) {
         return trustDetails[tokenId].investmentBenefitRate;
     }
 
-    function supportsInterface(
-        bytes4 interfaceId
-    ) public view virtual override(AccessControl, ERC721) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(AccessControl, ERC721) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 }

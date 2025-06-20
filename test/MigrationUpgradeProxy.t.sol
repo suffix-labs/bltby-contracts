@@ -21,17 +21,10 @@ contract MigrationUpgradeProxyTest is Test {
     }
 
     function testDeployProxy() public {
-        bytes memory initData = abi.encodeWithSignature(
-            "initialize(address)",
-            owner
-        );
+        bytes memory initData = abi.encodeWithSignature("initialize(address)", owner);
 
         vm.prank(owner);
-        migrationProxy.deployProxy(
-            address(logicContract),
-            initData,
-            "TestContract"
-        );
+        migrationProxy.deployProxy(address(logicContract), initData, "TestContract");
 
         address proxyAddress = migrationProxy.getProxyAddress("TestContract");
         address adminAddress = migrationProxy.getProxyAdmin("TestContract");
@@ -41,17 +34,10 @@ contract MigrationUpgradeProxyTest is Test {
     }
 
     function testGetProxyAddress() public {
-        bytes memory initData = abi.encodeWithSignature(
-            "initialize(address)",
-            owner
-        );
+        bytes memory initData = abi.encodeWithSignature("initialize(address)", owner);
 
         vm.prank(owner);
-        migrationProxy.deployProxy(
-            address(logicContract),
-            initData,
-            "TestContract"
-        );
+        migrationProxy.deployProxy(address(logicContract), initData, "TestContract");
 
         address proxyAddress = migrationProxy.getProxyAddress("TestContract");
         address storedAddress = migrationProxy.proxies("TestContract");
@@ -65,34 +51,20 @@ contract MigrationUpgradeProxyTest is Test {
     }
 
     function testOnlyOwnerCanDeployProxy() public {
-        bytes memory initData = abi.encodeWithSignature(
-            "initialize(address)",
-            owner
-        );
+        bytes memory initData = abi.encodeWithSignature("initialize(address)", owner);
         address nonOwner = makeAddr("nonOwner");
 
         vm.prank(nonOwner);
         vm.expectRevert();
-        migrationProxy.deployProxy(
-            address(logicContract),
-            initData,
-            "TestContract"
-        );
+        migrationProxy.deployProxy(address(logicContract), initData, "TestContract");
     }
 
     function testUpgradeProxy() public {
         // Deploy initial proxy
-        bytes memory initData = abi.encodeWithSignature(
-            "initialize(address)",
-            owner
-        );
+        bytes memory initData = abi.encodeWithSignature("initialize(address)", owner);
 
         vm.prank(owner);
-        migrationProxy.deployProxy(
-            address(logicContract),
-            initData,
-            "TestContract"
-        );
+        migrationProxy.deployProxy(address(logicContract), initData, "TestContract");
 
         address proxyAddress = migrationProxy.getProxyAddress("TestContract");
         BLTBYToken newLogicContract = new BLTBYToken();
@@ -107,28 +79,17 @@ contract MigrationUpgradeProxyTest is Test {
 
     function testUpgradeProxyAndCall() public {
         // Deploy initial proxy
-        bytes memory initData = abi.encodeWithSignature(
-            "initialize(address)",
-            owner
-        );
+        bytes memory initData = abi.encodeWithSignature("initialize(address)", owner);
 
         vm.prank(owner);
-        migrationProxy.deployProxy(
-            address(logicContract),
-            initData,
-            "TestContract"
-        );
+        migrationProxy.deployProxy(address(logicContract), initData, "TestContract");
 
         BLTBYToken newLogicContract = new BLTBYToken();
         bytes memory upgradeData = "";
 
         // Upgrade proxy with call
         vm.prank(owner);
-        migrationProxy.upgradeProxyAndCall(
-            "TestContract",
-            address(newLogicContract),
-            upgradeData
-        );
+        migrationProxy.upgradeProxyAndCall("TestContract", address(newLogicContract), upgradeData);
     }
 
     function testCannotUpgradeNonExistentProxy() public {
@@ -141,17 +102,10 @@ contract MigrationUpgradeProxyTest is Test {
 
     function testOnlyOwnerCanUpgrade() public {
         // Deploy initial proxy
-        bytes memory initData = abi.encodeWithSignature(
-            "initialize(address)",
-            owner
-        );
+        bytes memory initData = abi.encodeWithSignature("initialize(address)", owner);
 
         vm.prank(owner);
-        migrationProxy.deployProxy(
-            address(logicContract),
-            initData,
-            "TestContract"
-        );
+        migrationProxy.deployProxy(address(logicContract), initData, "TestContract");
 
         address nonOwner = makeAddr("nonOwner");
         BLTBYToken newLogicContract = new BLTBYToken();

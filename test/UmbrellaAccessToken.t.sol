@@ -12,13 +12,9 @@ contract MockSubContract {
     uint8 public tokenType;
     bool public initialized;
 
-    function initialize(
-        string memory _name,
-        string memory _symbol,
-        address _admin,
-        uint256 _duration,
-        uint8 _tokenType
-    ) external {
+    function initialize(string memory _name, string memory _symbol, address _admin, uint256 _duration, uint8 _tokenType)
+        external
+    {
         name = _name;
         symbol = _symbol;
         admin = _admin;
@@ -46,11 +42,7 @@ contract UmbrellaAccessTokenTest is Test {
         template = new MockSubContract();
 
         vm.startPrank(owner);
-        umbrellaToken = new UmbrellaAccessTokenContract(
-            address(template),
-            admin,
-            reviewer
-        );
+        umbrellaToken = new UmbrellaAccessTokenContract(address(template), admin, reviewer);
         vm.stopPrank();
     }
 
@@ -58,13 +50,8 @@ contract UmbrellaAccessTokenTest is Test {
         vm.prank(admin);
         umbrellaToken.createSubContract("Gym Access", "GYM", 30 days, 0);
 
-        (
-            address contractAddress,
-            string memory name,
-            uint256 createdAt,
-            uint8 tokenType,
-            bool approved
-        ) = umbrellaToken.subContracts(0);
+        (address contractAddress, string memory name, uint256 createdAt, uint8 tokenType, bool approved) =
+            umbrellaToken.subContracts(0);
 
         assertTrue(contractAddress != address(0));
         assertEq(name, "Gym Access");
@@ -80,8 +67,7 @@ contract UmbrellaAccessTokenTest is Test {
         vm.prank(reviewer);
         umbrellaToken.approveSubContract(0);
 
-        (address contractAddress, , , , bool approved) = umbrellaToken
-            .subContracts(0);
+        (address contractAddress,,,, bool approved) = umbrellaToken.subContracts(0);
 
         assertTrue(approved);
         assertTrue(umbrellaToken.isSubContractApproved(contractAddress));
@@ -91,7 +77,7 @@ contract UmbrellaAccessTokenTest is Test {
         vm.prank(admin);
         umbrellaToken.createSubContract("Seminar Access", "SEM", 1 days, 2);
 
-        (address contractAddress, , , , ) = umbrellaToken.subContracts(0);
+        (address contractAddress,,,,) = umbrellaToken.subContracts(0);
 
         assertFalse(umbrellaToken.isSubContractApproved(contractAddress));
 

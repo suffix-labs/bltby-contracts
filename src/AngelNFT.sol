@@ -17,11 +17,7 @@ contract AngelNFTContract is ERC721, AccessControl {
 
     mapping(uint256 => AngelAttributes) public angelDetails;
 
-    event AngelNFTMinted(
-        address indexed to,
-        uint256 tokenId,
-        bool hasEarlyInvestorPrivileges
-    );
+    event AngelNFTMinted(address indexed to, uint256 tokenId, bool hasEarlyInvestorPrivileges);
     event AngelNFTBurned(uint256 tokenId);
 
     error UnauthorizedAccess();
@@ -32,10 +28,7 @@ contract AngelNFTContract is ERC721, AccessControl {
         _tokenIdCounter = 1;
     }
 
-    function mintAngelNFT(
-        address to,
-        bool _hasEarlyInvestorPrivileges
-    ) external onlyRole(MINTER_ROLE) {
+    function mintAngelNFT(address to, bool _hasEarlyInvestorPrivileges) external onlyRole(MINTER_ROLE) {
         uint256 tokenId = _tokenIdCounter++;
         _safeMint(to, tokenId);
 
@@ -43,10 +36,7 @@ contract AngelNFTContract is ERC721, AccessControl {
         emit AngelNFTMinted(to, tokenId, _hasEarlyInvestorPrivileges);
     }
 
-    function _setAngelAttributes(
-        uint256 tokenId,
-        bool _hasEarlyInvestorPrivileges
-    ) private {
+    function _setAngelAttributes(uint256 tokenId, bool _hasEarlyInvestorPrivileges) private {
         angelDetails[tokenId] = AngelAttributes({
             hasEarlyInvestorPrivileges: _hasEarlyInvestorPrivileges,
             governanceWeight: _hasEarlyInvestorPrivileges ? 3 : 1,
@@ -64,15 +54,11 @@ contract AngelNFTContract is ERC721, AccessControl {
         emit AngelNFTBurned(tokenId);
     }
 
-    function hasEarlyInvestorPrivileges(
-        uint256 tokenId
-    ) external view returns (bool) {
+    function hasEarlyInvestorPrivileges(uint256 tokenId) external view returns (bool) {
         return angelDetails[tokenId].hasEarlyInvestorPrivileges;
     }
 
-    function getGovernanceWeight(
-        uint256 tokenId
-    ) external view returns (uint8) {
+    function getGovernanceWeight(uint256 tokenId) external view returns (uint8) {
         return angelDetails[tokenId].governanceWeight;
     }
 
@@ -80,9 +66,7 @@ contract AngelNFTContract is ERC721, AccessControl {
         return angelDetails[tokenId].discountRate;
     }
 
-    function supportsInterface(
-        bytes4 interfaceId
-    ) public view virtual override(AccessControl, ERC721) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(AccessControl, ERC721) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 }

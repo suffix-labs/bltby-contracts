@@ -17,11 +17,7 @@ contract FramerNFT is ERC721, AccessControl {
 
     mapping(uint256 => FramerAttributes) public framerDetails;
 
-    event FramerNFTMinted(
-        address indexed to,
-        uint256 tokenId,
-        bool isEarlyContributor
-    );
+    event FramerNFTMinted(address indexed to, uint256 tokenId, bool isEarlyContributor);
     event FramerNFTBurned(uint256 tokenId);
 
     error UnauthorizedAccess();
@@ -32,10 +28,7 @@ contract FramerNFT is ERC721, AccessControl {
         _tokenIdCounter = 1;
     }
 
-    function mintFramerNFT(
-        address to,
-        bool _isEarlyContributor
-    ) external onlyRole(MINTER_ROLE) {
+    function mintFramerNFT(address to, bool _isEarlyContributor) external onlyRole(MINTER_ROLE) {
         uint256 tokenId = _tokenIdCounter++;
         _safeMint(to, tokenId);
 
@@ -43,10 +36,7 @@ contract FramerNFT is ERC721, AccessControl {
         emit FramerNFTMinted(to, tokenId, _isEarlyContributor);
     }
 
-    function _setFramerAttributes(
-        uint256 tokenId,
-        bool _isEarlyContributor
-    ) private {
+    function _setFramerAttributes(uint256 tokenId, bool _isEarlyContributor) private {
         framerDetails[tokenId] = FramerAttributes({
             isEarlyContributor: _isEarlyContributor,
             governanceWeight: _isEarlyContributor ? 2 : 1,
@@ -68,9 +58,7 @@ contract FramerNFT is ERC721, AccessControl {
         return framerDetails[tokenId].isEarlyContributor;
     }
 
-    function getGovernanceWeight(
-        uint256 tokenId
-    ) external view returns (uint8) {
+    function getGovernanceWeight(uint256 tokenId) external view returns (uint8) {
         return framerDetails[tokenId].governanceWeight;
     }
 
@@ -78,9 +66,7 @@ contract FramerNFT is ERC721, AccessControl {
         return framerDetails[tokenId].hasLifetimeBenefits;
     }
 
-    function supportsInterface(
-        bytes4 interfaceId
-    ) public view virtual override(AccessControl, ERC721) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(AccessControl, ERC721) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 }

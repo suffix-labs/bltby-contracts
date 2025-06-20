@@ -17,13 +17,9 @@ contract TreasuryAndReserve is Ownable {
     event Burned(address indexed from, uint256 amount);
     event BuybackExecuted(address indexed from, uint256 amount);
 
-    constructor(
-        address initialOwner,
-        address _BLTBYToken,
-        address _USDC,
-        address _USDT,
-        address _PYUSD
-    ) Ownable(initialOwner) {
+    constructor(address initialOwner, address _BLTBYToken, address _USDC, address _USDT, address _PYUSD)
+        Ownable(initialOwner)
+    {
         BLTBYToken = IERC20(_BLTBYToken);
         USDC = IERC20(_USDC);
         USDT = IERC20(_USDT);
@@ -60,19 +56,10 @@ contract TreasuryAndReserve is Ownable {
      */
     function executeBuyback(address token, uint256 amount) external onlyOwner {
         require(
-            token == address(USDC) ||
-                token == address(USDT) ||
-                token == address(PYUSD),
-            "Invalid stablecoin address"
+            token == address(USDC) || token == address(USDT) || token == address(PYUSD), "Invalid stablecoin address"
         );
-        require(
-            IERC20(token).balanceOf(msg.sender) >= amount,
-            "Insufficient stablecoin balance"
-        );
-        require(
-            IERC20(token).transferFrom(msg.sender, address(this), amount),
-            "Buyback transfer failed"
-        );
+        require(IERC20(token).balanceOf(msg.sender) >= amount, "Insufficient stablecoin balance");
+        require(IERC20(token).transferFrom(msg.sender, address(this), amount), "Buyback transfer failed");
         emit BuybackExecuted(msg.sender, amount);
     }
 
@@ -93,8 +80,8 @@ contract TreasuryAndReserve is Ownable {
         require(to != address(0), "Invalid address");
         uint256 balance = address(this).balance;
         require(balance > 0, "No ETH to withdraw");
-        
-        (bool success, ) = to.call{value: balance}("");
+
+        (bool success,) = to.call{value: balance}("");
         require(success, "ETH transfer failed");
     }
 

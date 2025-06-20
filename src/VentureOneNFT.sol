@@ -17,27 +17,18 @@ contract VentureOneNFTContract is ERC721, AccessControl {
 
     mapping(uint256 => VentureOneAttributes) public ventureOneDetails;
 
-    event VentureOneNFTMinted(
-        address indexed to,
-        uint256 tokenId,
-        bool isVentureRoundOne
-    );
+    event VentureOneNFTMinted(address indexed to, uint256 tokenId, bool isVentureRoundOne);
     event VentureOneNFTBurned(uint256 tokenId);
 
     error UnauthorizedAccess();
 
-    constructor(
-        address initialOwner
-    ) ERC721("Venture One Membership", "V1NFT") {
+    constructor(address initialOwner) ERC721("Venture One Membership", "V1NFT") {
         _grantRole(DEFAULT_ADMIN_ROLE, initialOwner);
         _grantRole(MINTER_ROLE, initialOwner);
         _tokenIdCounter = 1;
     }
 
-    function mintVentureOneNFT(
-        address to,
-        bool _isVentureRoundOne
-    ) external onlyRole(MINTER_ROLE) {
+    function mintVentureOneNFT(address to, bool _isVentureRoundOne) external onlyRole(MINTER_ROLE) {
         uint256 tokenId = _tokenIdCounter++;
         _safeMint(to, tokenId);
 
@@ -45,10 +36,7 @@ contract VentureOneNFTContract is ERC721, AccessControl {
         emit VentureOneNFTMinted(to, tokenId, _isVentureRoundOne);
     }
 
-    function _setVentureOneAttributes(
-        uint256 tokenId,
-        bool _isVentureRoundOne
-    ) private {
+    function _setVentureOneAttributes(uint256 tokenId, bool _isVentureRoundOne) private {
         ventureOneDetails[tokenId] = VentureOneAttributes({
             isVentureRoundOne: _isVentureRoundOne,
             governanceWeight: _isVentureRoundOne ? 4 : 2,
@@ -70,9 +58,7 @@ contract VentureOneNFTContract is ERC721, AccessControl {
         return ventureOneDetails[tokenId].isVentureRoundOne;
     }
 
-    function getGovernanceWeight(
-        uint256 tokenId
-    ) external view returns (uint8) {
+    function getGovernanceWeight(uint256 tokenId) external view returns (uint8) {
         return ventureOneDetails[tokenId].governanceWeight;
     }
 
@@ -80,9 +66,7 @@ contract VentureOneNFTContract is ERC721, AccessControl {
         return ventureOneDetails[tokenId].discountRate;
     }
 
-    function supportsInterface(
-        bytes4 interfaceId
-    ) public view virtual override(AccessControl, ERC721) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(AccessControl, ERC721) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 }

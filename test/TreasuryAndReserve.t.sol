@@ -19,7 +19,7 @@ contract TreasuryAndReserveTest is Test {
     BLTBYToken public tokenImplementation;
     TransparentUpgradeableProxy public tokenProxy;
     ProxyAdmin public tokenProxyAdmin;
-    
+
     MockERC20 public usdc;
     MockERC20 public usdt;
     MockERC20 public pyusd;
@@ -37,23 +37,14 @@ contract TreasuryAndReserveTest is Test {
         tokenImplementation = new BLTBYToken();
         tokenProxyAdmin = new ProxyAdmin(owner);
         bytes memory tokenInitData = abi.encodeWithSignature("initialize(address)", owner);
-        tokenProxy = new TransparentUpgradeableProxy(
-            address(tokenImplementation),
-            address(tokenProxyAdmin),
-            tokenInitData
-        );
+        tokenProxy =
+            new TransparentUpgradeableProxy(address(tokenImplementation), address(tokenProxyAdmin), tokenInitData);
         bltbyToken = BLTBYToken(address(tokenProxy));
         usdc = new MockERC20("USD Coin", "USDC");
         usdt = new MockERC20("Tether USD", "USDT");
         pyusd = new MockERC20("PayPal USD", "PYUSD");
 
-        treasury = new TreasuryAndReserve(
-            owner,
-            address(bltbyToken),
-            address(usdc),
-            address(usdt),
-            address(pyusd)
-        );
+        treasury = new TreasuryAndReserve(owner, address(bltbyToken), address(usdc), address(usdt), address(pyusd));
 
         bltbyToken.transfer(address(treasury), 50000 * 10 ** 18);
 

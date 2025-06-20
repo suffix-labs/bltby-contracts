@@ -34,15 +34,13 @@ contract BLTBYToken is
     error InsufficientRole(string role);
     error BurnFailed(address from, uint256 amount);
 
-    function initialize(
-        address initialOwner
-    ) public initializer {
+    function initialize(address initialOwner) public initializer {
         __ERC20_init("BLTBY Token Contract", "BLTBY");
         __Ownable_init(initialOwner);
         __AccessControl_init();
         __Pausable_init();
         __ReentrancyGuard_init();
-        
+
         MAX_SUPPLY = 2_500_000_000 * 10 ** 18; // Set MAX_SUPPLY in initialize
         _mint(initialOwner, INITIAL_SUPPLY); // Initial mint to deployer
         _grantRole(DEFAULT_ADMIN_ROLE, initialOwner);
@@ -57,10 +55,7 @@ contract BLTBYToken is
      * @param to The address that will receive the minted tokens.
      * @param amount The amount of tokens to mint.
      */
-    function mint(
-        address to,
-        uint256 amount
-    ) external onlyRole(MINTER_ROLE) nonReentrant whenNotPaused {
+    function mint(address to, uint256 amount) external onlyRole(MINTER_ROLE) nonReentrant whenNotPaused {
         if (block.timestamp < lastMintTimestamp + 365 days) {
             revert MintingTooSoon();
         }
@@ -68,10 +63,7 @@ contract BLTBYToken is
             revert MintExceedsCap(amount, MAX_SUPPLY - totalSupply());
         }
         if (amount > (MAX_SUPPLY * MINT_CAP_PERCENTAGE) / 100) {
-            revert MintExceedsCap(
-                amount,
-                (MAX_SUPPLY * MINT_CAP_PERCENTAGE) / 100
-            );
+            revert MintExceedsCap(amount, (MAX_SUPPLY * MINT_CAP_PERCENTAGE) / 100);
         }
         if (!hasRole(MULTISIG_ROLE, msg.sender)) {
             revert InsufficientRole("MULTISIG_ROLE");
@@ -87,10 +79,7 @@ contract BLTBYToken is
      * @param from The address from which tokens will be burned.
      * @param amount The amount of tokens to burn.
      */
-    function burn(
-        address from,
-        uint256 amount
-    ) external onlyOwner nonReentrant whenNotPaused {
+    function burn(address from, uint256 amount) external onlyOwner nonReentrant whenNotPaused {
         if (balanceOf(from) < amount) {
             revert BurnFailed(from, amount);
         }
@@ -117,10 +106,7 @@ contract BLTBYToken is
      * @param recipient Address of the recipient.
      * @param amount Amount to be transferred.
      */
-    function transfer(
-        address recipient,
-        uint256 amount
-    ) public override whenNotPaused returns (bool) {
+    function transfer(address recipient, uint256 amount) public override whenNotPaused returns (bool) {
         return super.transfer(recipient, amount);
     }
 
@@ -130,11 +116,12 @@ contract BLTBYToken is
      * @param recipient The address receiving tokens.
      * @param amount The amount of tokens to be transferred.
      */
-    function transferFrom(
-        address sender,
-        address recipient,
-        uint256 amount
-    ) public override whenNotPaused returns (bool) {
+    function transferFrom(address sender, address recipient, uint256 amount)
+        public
+        override
+        whenNotPaused
+        returns (bool)
+    {
         return super.transferFrom(sender, recipient, amount);
     }
 

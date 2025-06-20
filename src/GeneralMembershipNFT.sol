@@ -17,17 +17,9 @@ contract GeneralMembershipNFT is ERC721, AccessControl {
     mapping(uint256 => MembershipAttributes) public membershipDetails;
     mapping(address => bool) public hasMembershipNFT;
 
-    event GeneralMembershipNFTMinted(
-        address indexed to,
-        uint256 tokenId,
-        bool isActiveMember
-    );
+    event GeneralMembershipNFTMinted(address indexed to, uint256 tokenId, bool isActiveMember);
     event GeneralMembershipNFTBurned(uint256 tokenId);
-    event MembershipUpdated(
-        uint256 tokenId,
-        bool isActiveMember,
-        uint8 accessLevel
-    );
+    event MembershipUpdated(uint256 tokenId, bool isActiveMember, uint8 accessLevel);
 
     error UnauthorizedAccess();
     error AlreadyHoldsMembershipNFT(address account);
@@ -38,32 +30,24 @@ contract GeneralMembershipNFT is ERC721, AccessControl {
         _tokenIdCounter = 1;
     }
 
-    function mintGeneralMembershipNFT(
-        address to,
-        bool _isActiveMember
-    ) external onlyRole(MINTER_ROLE) {
+    function mintGeneralMembershipNFT(address to, bool _isActiveMember) external onlyRole(MINTER_ROLE) {
         if (hasMembershipNFT[to]) {
             revert AlreadyHoldsMembershipNFT(to);
         }
 
         uint256 tokenId = _tokenIdCounter++;
-        
+
         // Update state variables before external call to prevent reentrancy
         _setMembershipAttributes(tokenId, _isActiveMember);
         hasMembershipNFT[to] = true;
-        
+
         _safeMint(to, tokenId);
         emit GeneralMembershipNFTMinted(to, tokenId, _isActiveMember);
     }
 
-    function _setMembershipAttributes(
-        uint256 tokenId,
-        bool _isActiveMember
-    ) private {
-        membershipDetails[tokenId] = MembershipAttributes({
-            isActiveMember: _isActiveMember,
-            accessLevel: _isActiveMember ? 1 : 0
-        });
+    function _setMembershipAttributes(uint256 tokenId, bool _isActiveMember) private {
+        membershipDetails[tokenId] =
+            MembershipAttributes({isActiveMember: _isActiveMember, accessLevel: _isActiveMember ? 1 : 0});
     }
 
     function burnGeneralMembershipNFT(uint256 tokenId) external {
@@ -77,11 +61,10 @@ contract GeneralMembershipNFT is ERC721, AccessControl {
         emit GeneralMembershipNFTBurned(tokenId);
     }
 
-    function updateMembership(
-        uint256 tokenId,
-        bool _isActiveMember,
-        uint8 _accessLevel
-    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function updateMembership(uint256 tokenId, bool _isActiveMember, uint8 _accessLevel)
+        external
+        onlyRole(DEFAULT_ADMIN_ROLE)
+    {
         membershipDetails[tokenId].isActiveMember = _isActiveMember;
         membershipDetails[tokenId].accessLevel = _accessLevel;
         emit MembershipUpdated(tokenId, _isActiveMember, _accessLevel);
@@ -95,9 +78,7 @@ contract GeneralMembershipNFT is ERC721, AccessControl {
         return membershipDetails[tokenId].accessLevel;
     }
 
-    function supportsInterface(
-        bytes4 interfaceId
-    ) public view virtual override(AccessControl, ERC721) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(AccessControl, ERC721) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 }

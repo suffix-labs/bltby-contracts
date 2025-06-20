@@ -35,17 +35,10 @@ contract BLTBYTokenTest is Test {
         BLTBYToken implementation = new BLTBYToken();
 
         // Prepare initialization data
-        bytes memory initData = abi.encodeWithSignature(
-            "initialize(address)",
-            owner
-        );
+        bytes memory initData = abi.encodeWithSignature("initialize(address)", owner);
 
         // Deploy proxy via migration proxy
-        migrationProxy.deployProxy(
-            address(implementation),
-            initData,
-            "BLTBYToken"
-        );
+        migrationProxy.deployProxy(address(implementation), initData, "BLTBYToken");
 
         // Get proxy address and cast to BLTBYToken interface
         address proxyAddress = migrationProxy.getProxyAddress("BLTBYToken");
@@ -112,10 +105,7 @@ contract BLTBYTokenTest is Test {
         vm.prank(recipient);
         bltbyToken.redeem(redeemAmount);
 
-        assertEq(
-            bltbyToken.balanceOf(recipient),
-            initialBalance - redeemAmount
-        );
+        assertEq(bltbyToken.balanceOf(recipient), initialBalance - redeemAmount);
     }
 
     function testMintWithValidRole() public {

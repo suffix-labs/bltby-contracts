@@ -9,14 +9,14 @@ contract VentureOneNFTTest is Test {
     address public owner;
     address public minter;
     address public recipient;
-    
+
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
     function setUp() public {
         owner = makeAddr("owner");
         minter = makeAddr("minter");
         recipient = makeAddr("recipient");
-        
+
         vm.startPrank(owner);
         ventureOneNFT = new VentureOneNFTContract(owner);
         ventureOneNFT.grantRole(MINTER_ROLE, minter);
@@ -26,7 +26,7 @@ contract VentureOneNFTTest is Test {
     function testMintVentureOneNFTRoundOne() public {
         vm.prank(minter);
         ventureOneNFT.mintVentureOneNFT(recipient, true);
-        
+
         assertEq(ventureOneNFT.ownerOf(1), recipient);
         assertTrue(ventureOneNFT.isVentureRoundOne(1));
         assertEq(ventureOneNFT.getGovernanceWeight(1), 4);
@@ -36,7 +36,7 @@ contract VentureOneNFTTest is Test {
     function testMintVentureOneNFTNonRoundOne() public {
         vm.prank(minter);
         ventureOneNFT.mintVentureOneNFT(recipient, false);
-        
+
         assertEq(ventureOneNFT.ownerOf(1), recipient);
         assertFalse(ventureOneNFT.isVentureRoundOne(1));
         assertEq(ventureOneNFT.getGovernanceWeight(1), 2);
@@ -46,10 +46,10 @@ contract VentureOneNFTTest is Test {
     function testBurnVentureOneNFTByOwner() public {
         vm.prank(minter);
         ventureOneNFT.mintVentureOneNFT(recipient, true);
-        
+
         vm.prank(recipient);
         ventureOneNFT.burnVentureOneNFT(1);
-        
+
         vm.expectRevert();
         ventureOneNFT.ownerOf(1);
     }
@@ -57,14 +57,13 @@ contract VentureOneNFTTest is Test {
     function testBurnVentureOneNFTByAdmin() public {
         vm.prank(minter);
         ventureOneNFT.mintVentureOneNFT(recipient, true);
-        
+
         vm.prank(owner);
         ventureOneNFT.burnVentureOneNFT(1);
-        
+
         vm.expectRevert();
         ventureOneNFT.ownerOf(1);
     }
-
 
     function testSupportsInterface() public {
         assertTrue(ventureOneNFT.supportsInterface(type(IERC165).interfaceId));
