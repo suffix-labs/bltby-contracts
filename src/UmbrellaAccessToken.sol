@@ -49,11 +49,11 @@ contract UmbrellaAccessTokenContract is AccessControl, ReentrancyGuard {
     error SubContractAlreadyApproved(uint256 subContractId);
     error InvalidSubContractAddress(address contractAddress);
 
-    constructor(address _subContractTemplate) {
+    constructor(address _subContractTemplate, address admin, address reviewer) {
         require(_subContractTemplate != address(0), "Invalid template address");
         subContractTemplate = _subContractTemplate;
-        grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        grantRole(ADMIN_ROLE, msg.sender);
+        _grantRole(ADMIN_ROLE, admin);
+        _grantRole(REVIEWER_ROLE, reviewer);
     }
 
     /**

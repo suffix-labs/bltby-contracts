@@ -9,7 +9,7 @@ contract BLTBYTokenTest is Test {
     address public owner;
     address public minter;
     address public recipient;
-    
+
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant MULTISIG_ROLE = keccak256("MULTISIG_ROLE");
 
@@ -17,7 +17,12 @@ contract BLTBYTokenTest is Test {
         owner = makeAddr("owner");
         minter = makeAddr("minter");
         recipient = makeAddr("recipient");
-        
+
+        // Fund the test wallets with ETH
+        vm.deal(owner, 100 ether);
+        vm.deal(minter, 100 ether);
+        vm.deal(recipient, 100 ether);
+
         vm.startPrank(owner);
         bltbyToken = new BLTBYToken(owner);
         bltbyToken.grantRole(MINTER_ROLE, minter);
@@ -35,25 +40,25 @@ contract BLTBYTokenTest is Test {
 
     function testTransfer() public {
         uint256 amount = 1000 * 10 ** 18;
-        
+
         vm.prank(owner);
         bltbyToken.transfer(recipient, amount);
-        
+
         assertEq(bltbyToken.balanceOf(recipient), amount);
     }
 
     function testPauseAndUnpause() public {
         vm.prank(owner);
         bltbyToken.pause();
-        
+
         uint256 amount = 1000 * 10 ** 18;
         vm.prank(owner);
         vm.expectRevert();
         bltbyToken.transfer(recipient, amount);
-        
+
         vm.prank(owner);
         bltbyToken.unpause();
-        
+
         vm.prank(owner);
         bltbyToken.transfer(recipient, amount);
         assertEq(bltbyToken.balanceOf(recipient), amount);
@@ -62,35 +67,38 @@ contract BLTBYTokenTest is Test {
     function testBurn() public {
         uint256 burnAmount = 1000 * 10 ** 18;
         uint256 initialBalance = bltbyToken.balanceOf(owner);
-        
+
         vm.prank(owner);
         bltbyToken.burn(owner, burnAmount);
-        
+
         assertEq(bltbyToken.balanceOf(owner), initialBalance - burnAmount);
     }
 
     function testRedeem() public {
         uint256 redeemAmount = 1000 * 10 ** 18;
-        
+
         vm.prank(owner);
         bltbyToken.transfer(recipient, redeemAmount);
-        
+
         uint256 initialBalance = bltbyToken.balanceOf(recipient);
-        
+
         vm.prank(recipient);
         bltbyToken.redeem(redeemAmount);
-        
-        assertEq(bltbyToken.balanceOf(recipient), initialBalance - redeemAmount);
+
+        assertEq(
+            bltbyToken.balanceOf(recipient),
+            initialBalance - redeemAmount
+        );
     }
 
     function testMintWithValidRole() public {
         uint256 mintAmount = 1000 * 10 ** 18;
-        
+
         vm.warp(block.timestamp + 366 days);
-        
+
         vm.prank(minter);
         bltbyToken.mint(recipient, mintAmount);
-        
+
         assertEq(bltbyToken.balanceOf(recipient), mintAmount);
     }
 }

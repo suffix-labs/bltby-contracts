@@ -23,11 +23,9 @@ contract BLTBYToken is
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant MULTISIG_ROLE = keccak256("MULTISIG_ROLE");
 
-    // Event declarations
     event Minted(address indexed to, uint256 amount);
     event Burned(address indexed from, uint256 amount);
 
-    // Custom errors for gas efficiency
     error UnauthorizedAccess();
     error MintingTooSoon();
     error MintExceedsCap(uint256 requested, uint256 allowed);
@@ -37,10 +35,10 @@ contract BLTBYToken is
     constructor(
         address initialOwner
     ) ERC20("BLTBY Token Contract", "BLTBY") Ownable(initialOwner) {
-        _mint(msg.sender, INITIAL_SUPPLY); // Initial mint to deployer
-        grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        grantRole(MINTER_ROLE, msg.sender);
-        grantRole(MULTISIG_ROLE, msg.sender);
+        _mint(initialOwner, INITIAL_SUPPLY); // Initial mint to deployer
+        _grantRole(DEFAULT_ADMIN_ROLE, initialOwner);
+        _grantRole(MINTER_ROLE, initialOwner);
+        _grantRole(MULTISIG_ROLE, initialOwner);
         lastMintTimestamp = block.timestamp;
     }
 
